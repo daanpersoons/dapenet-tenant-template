@@ -16,9 +16,11 @@ with its own OIDC token; no secrets needed.
 | Name | Type | Value |
 |---|---|---|
 | `app.example.com` | CNAME | `tenants.dape.pro` |
-| `_acme-challenge.app.example.com` | CNAME | *provided by the cluster admin* |
+| `_acme-challenge.app.example.com` | CNAME | `app.example.com.4a3a547cec0c6ca3.dcv.cloudflare.com` |
 
-If your domain has CAA records, add `0 issue "ssl.com"`.
+The second record lets dapenet's Cloudflare zone issue and renew the HTTPS certificate for
+your hostname; remove it to revoke that. If your domain has CAA records, add
+`0 issue "ssl.com"`.
 
 ## Rules
 
