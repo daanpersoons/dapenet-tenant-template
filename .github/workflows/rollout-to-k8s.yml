@@ -1,0 +1,42 @@
+---
+name: Rollout to k8s
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'k8s/**'
+      - '.github/workflows/rollout-to-k8s.yml'
+  workflow_dispatch:
+
+# id-token: GitHub signs a short-lived OIDC token for this run; dapenet trusts it and
+# maps it to "github:<owner>/<repo>". No kubeconfig or secrets are stored anywhere.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  rollout:
+    # The template itself has no namespace to deploy to.
+    if: ${{ !github.event.repository.is_template }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [production]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to dapenet
+        run: |
+          TOKEN=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=k8s.dape.pro" | jq -r .value)
+          echo "::add-mask::$TOKEN"
+          kubectl config set-cluster dapenet --server=https://k8s.dape.pro
+          kubectl config set-credentials ci --token="$TOKEN"
+          kubectl config set-context ci --cluster=dapenet --user=ci
+          kubectl config use-context ci
+          kubectl auth whoami
+
+      - name: Apply
+        run: kubectl apply -k k8s/environments/${{ matrix.environment }}/

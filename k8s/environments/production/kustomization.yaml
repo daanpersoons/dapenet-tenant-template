@@ -1,0 +1,16 @@
+---
+# Your namespace for this environment, created by the dapenet admin.
+# Don't add a Namespace resource; setting `namespace:` is enough.
+namespace: example-production
+resources:
+  - ../../base/
+patches:
+  # Only hostnames assigned to your namespace are accepted.
+  - target:
+      kind: HTTPRoute
+      name: whoami
+    patch: |
+      - {op: replace, path: /spec/hostnames, value: [app.example.com]}
+replicas:
+  - name: whoami
+    count: 2
