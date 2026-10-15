@@ -33,5 +33,10 @@ your hostname; remove it to revoke that. If your domain has CAA records, add
 
 ```bash
 brew install kubelogin
-KUBECONFIG=kubeconfig-dapenet.yaml kubectl -n <namespace> get pods
+export KUBECONFIG=$PWD/kubeconfig-dapenet.yaml
+kubectl config set-context --current --namespace <namespace>   # you can't use "default"
+kubectl get pods
 ```
+
+You can't list namespaces or nodes. In Lens or other GUIs, add your namespace under
+cluster *Settings → Namespaces → Accessible Namespaces*, otherwise they show nothing.
