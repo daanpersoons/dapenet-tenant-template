@@ -15,7 +15,7 @@ with its own OIDC token; no secrets needed.
 
 | Name | Type | Value |
 |---|---|---|
-| `app.example.com` | CNAME | `customers.dape.pro` |
+| `app.example.com` | CNAME | `tenants.dape.pro` |
 | `_acme-challenge.app.example.com` | CNAME | *provided by the cluster admin* |
 
 If your domain has CAA records, add `0 issue "ssl.com"`.
