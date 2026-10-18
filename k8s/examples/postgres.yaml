@@ -1,0 +1,47 @@
+# Postgres with CloudNativePG: copy into k8s/base/ and add it to kustomization.yaml.
+# The app connects with Secret "db-app" (keys: host, port, dbname, user, password, uri);
+# host "db-rw" is the primary, "db-ro" the replicas.
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: db
+spec:
+  instances: 2                 # primary + replica on another node; CNPG fails over itself
+  storage:
+    storageClass: local-path   # node-local and fast; CNPG does the replication
+    size: 5Gi
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 1Gi}
+  # Backups (WAL archiving + point-in-time recovery). Enable once the cluster admin has
+  # created the Secret "backup-s3" (your own bucket) in your namespace:
+  # plugins:
+  #   - name: barman-cloud.cloudnative-pg.io
+  #     isWALArchiver: true
+  #     parameters: {barmanObjectName: backups}
+# ---
+# apiVersion: barmancloud.cnpg.io/v1
+# kind: ObjectStore
+# metadata:
+#   name: backups
+# spec:
+#   retentionPolicy: "7d"
+#   configuration:
+#     destinationPath: s3://<your-bucket>/
+#     endpointURL: <endpoint from the cluster admin>
+#     s3Credentials:
+#       accessKeyId: {name: backup-s3, key: ACCESS_KEY_ID}
+#       secretAccessKey: {name: backup-s3, key: ACCESS_SECRET_KEY}
+#       region: {name: backup-s3, key: REGION}
+#     wal: {compression: gzip}
+#     data: {compression: gzip}
+# ---
+# apiVersion: postgresql.cnpg.io/v1
+# kind: ScheduledBackup
+# metadata:
+#   name: daily
+# spec:
+#   schedule: "0 0 2 * * *"    # seconds field first: daily 02:00 UTC
+#   cluster: {name: db}
+#   method: plugin
+#   pluginConfiguration: {name: barman-cloud.cloudnative-pg.io}

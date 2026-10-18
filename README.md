@@ -29,6 +29,12 @@ your hostname; remove it to revoke that. If your domain has CAA records, add
   assigned hostnames. Serve plain HTTP; Cloudflare handles HTTPS.
 - No `Namespace` resources, LoadBalancers or NodePorts.
 
+## Postgres
+
+CloudNativePG runs Postgres in your namespace: see `k8s/examples/postgres.yaml`. Use full
+resource names with kubectl (`backups.postgresql.cnpg.io`): `backup` alone means another
+type on this cluster.
+
 ## kubectl
 
 ```bash
